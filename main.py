@@ -1,5 +1,7 @@
+import utils.session
 from fastapi import FastAPI, Request
 from mock_data import products
+from dtos import ProductDTO
 
 app=FastAPI()
 
@@ -40,3 +42,47 @@ def query_example(request:Request):
 @app.get("/contact")
 def contact():
     return "Welcome to our contact page"
+
+
+@app.post("/products")
+def create_product(data:ProductDTO):
+
+    data=data.model_dump() 
+    products.append(data)
+    print(data)
+    return {
+        "status_code":200,
+        "success":True,
+        "data":products
+    } 
+
+
+
+
+@app.put("/products/{product_id}")
+def update_product(product_id: int, data: ProductDTO):
+
+    for index, product in enumerate(products):
+        if product.get("id") == product_id:
+            updated_product = data.model_dump()
+
+            updated_product["id"] = product_id
+
+            products[index] = updated_product
+
+            return {
+                "success": True,
+                "data": updated_product
+            }
+
+@app.delete("/products/{product_id}")
+def delete_product(product_id:int):
+    for index,product in enumerate(products):
+        if product.get("id")==product_id:
+            deleted_product=products.pop(index)
+
+            return{
+                "status_code":200,
+                "success":True,
+                "data":deleted_product
+            }
